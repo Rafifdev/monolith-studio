@@ -139,23 +139,6 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
         </div>
       </div>
 
-      {/* Cloudflared Instructions */}
-      <div className="space-y-2 border-t-[3px] border-foreground pt-4">
-        <h4 className="text-xs font-mono uppercase tracking-widest text-primary">
-          📡 Cloudflared Setup
-        </h4>
-        <div className="bg-muted p-3 border-[2px] border-foreground">
-          <pre className="text-[10px] font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
-{`# Install cloudflared
-# Then run:
-cloudflared tunnel --url ${overlayUrl}
-
-# Copy the tunnel URL
-# and use it as Browser Source
-# in OBS or TikTok Studio`}
-          </pre>
-        </div>
-      </div>
     </motion.div>
   );
 }
