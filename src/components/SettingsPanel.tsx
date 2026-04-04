@@ -47,18 +47,6 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
         </div>
       </div>
 
-      {/* Overlay URL */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Overlay URL (for OBS/TikTok Studio)
-        </label>
-        <div className="brutal-input text-xs break-all select-all cursor-pointer" onClick={() => navigator.clipboard.writeText(overlayUrl)}>
-          {overlayUrl}
-        </div>
-        <p className="text-[10px] font-mono text-muted-foreground">
-          Click to copy. Add as Browser Source in OBS. For TikTok Studio, use cloudflared tunnel.
-        </p>
-      </div>
 
       {/* Toggles */}
       <div className="space-y-3">
