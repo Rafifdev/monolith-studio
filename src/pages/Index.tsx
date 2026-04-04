@@ -6,7 +6,6 @@ import { TestPanel } from "@/components/TestPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { OverlayURLPanel } from "@/components/OverlayURLPanel";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
-import { useOverlayStore } from "@/hooks/useOverlayStore";
 
 const Index = () => {
   const store = useOverlayStore();
