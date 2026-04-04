@@ -140,15 +140,9 @@ const Index = () => {
             />
           </div>
 
-          {/* Overlay Preview */}
+          {/* Overlay Output */}
           <div className={`${activeTab === "preview" ? "block" : "hidden"} lg:block`}>
-            <OverlayPreview
-              chats={store.chats}
-              gifts={store.gifts}
-              joins={store.joins}
-              settings={store.settings}
-              stats={store.stats}
-            />
+            <OverlayURLPanel />
           </div>
 
           {/* Settings */}
