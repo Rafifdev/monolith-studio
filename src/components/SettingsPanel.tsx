@@ -10,7 +10,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDisconnect }: SettingsPanelProps) {
-  const overlayUrl = `${window.location.origin}/overlay`;
+  
 
   return (
     <motion.div
@@ -47,18 +47,6 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
         </div>
       </div>
 
-      {/* Overlay URL */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Overlay URL (for OBS/TikTok Studio)
-        </label>
-        <div className="brutal-input text-xs break-all select-all cursor-pointer" onClick={() => navigator.clipboard.writeText(overlayUrl)}>
-          {overlayUrl}
-        </div>
-        <p className="text-[10px] font-mono text-muted-foreground">
-          Click to copy. Add as Browser Source in OBS. For TikTok Studio, use cloudflared tunnel.
-        </p>
-      </div>
 
       {/* Toggles */}
       <div className="space-y-3">
@@ -151,23 +139,6 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
         </div>
       </div>
 
-      {/* Cloudflared Instructions */}
-      <div className="space-y-2 border-t-[3px] border-foreground pt-4">
-        <h4 className="text-xs font-mono uppercase tracking-widest text-primary">
-          📡 Cloudflared Setup
-        </h4>
-        <div className="bg-muted p-3 border-[2px] border-foreground">
-          <pre className="text-[10px] font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
-{`# Install cloudflared
-# Then run:
-cloudflared tunnel --url ${overlayUrl}
-
-# Copy the tunnel URL
-# and use it as Browser Source
-# in OBS or TikTok Studio`}
-          </pre>
-        </div>
-      </div>
     </motion.div>
   );
 }
