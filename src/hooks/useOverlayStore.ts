@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { ThemeMode, ThemeTemplate } from "@/lib/theme";
 
 export interface ChatMessage {
   id: string;
@@ -33,6 +34,11 @@ export interface OverlaySettings {
   giftDuration: number;
   overlayPosition: "left" | "right";
   tiktokUsername: string;
+  cloudflareUrl: string;
+  themeMode: ThemeMode;
+  themeTemplate: ThemeTemplate;
+  customPrimaryColor: string;
+  auroraCardColors: string[];
 }
 
 export interface Stats {
@@ -53,6 +59,11 @@ const defaultSettings: OverlaySettings = {
   giftDuration: 5,
   overlayPosition: "left",
   tiktokUsername: "",
+  cloudflareUrl: "",
+  themeMode: "dark",
+  themeTemplate: "brutal",
+  customPrimaryColor: "#9b00ff",
+  auroraCardColors: ["#ff2d78", "#00f5d4", "#fee440", "#9b5de5"],
 };
 
 const defaultStats: Stats = {

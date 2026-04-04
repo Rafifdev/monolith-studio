@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { OverlaySettings } from "@/hooks/useOverlayStore";
+import { THEME_PRESETS, AURORA_CARD_COLORS, generateAuroraColors } from "@/lib/theme";
 
 interface SettingsPanelProps {
   settings: OverlaySettings;
@@ -10,7 +11,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDisconnect }: SettingsPanelProps) {
-  
+
 
   return (
     <motion.div
@@ -22,17 +23,31 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
         ⚙️ Settings
       </h3>
 
-      {/* TikTok Connection */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          TikTok Username
-        </label>
-        <input
-          className="brutal-input text-sm"
-          placeholder="@username"
-          value={settings.tiktokUsername}
-          onChange={(e) => onUpdate({ tiktokUsername: e.target.value })}
-        />
+      {/* Connection Settings */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+            TikTok Username
+          </label>
+          <input
+            className="brutal-input text-sm"
+            placeholder="@username"
+            value={settings.tiktokUsername}
+            onChange={(e) => onUpdate({ tiktokUsername: e.target.value })}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+            Cloudflare Tunnel URL
+          </label>
+          <input
+            className="brutal-input text-sm"
+            placeholder="https://your-tunnel.trycloudflare.com"
+            value={settings.cloudflareUrl}
+            onChange={(e) => onUpdate({ cloudflareUrl: e.target.value })}
+          />
+        </div>
+
         <button
           className={isConnected ? "brutal-btn-secondary w-full text-sm" : "brutal-btn w-full text-sm"}
           onClick={isConnected ? onDisconnect : onConnect}
@@ -45,32 +60,6 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
             {isConnected ? "CONNECTED" : "DISCONNECTED"}
           </span>
         </div>
-      </div>
-
-
-      {/* Toggles */}
-      <div className="space-y-3">
-        <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Overlay Components
-        </label>
-        {([
-          ["chatEnabled", "Chat Overlay"],
-          ["giftEnabled", "Gift Alerts"],
-          ["viewerCountEnabled", "Viewer Count"],
-          ["joinNotifEnabled", "Join Notifications"],
-        ] as const).map(([key, label]) => (
-          <label key={key} className="flex items-center gap-3 cursor-pointer group">
-            <div
-              className={`w-6 h-6 border-[3px] border-foreground flex items-center justify-center transition-colors ${
-                settings[key] ? "bg-primary" : "bg-muted"
-              }`}
-              onClick={() => onUpdate({ [key]: !settings[key] })}
-            >
-              {settings[key] && <span className="text-primary-foreground font-bold text-sm">✓</span>}
-            </div>
-            <span className="text-sm font-mono group-hover:text-primary transition-colors">{label}</span>
-          </label>
-        ))}
       </div>
 
       {/* Sliders */}
@@ -116,29 +105,87 @@ export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDi
         </div>
       </div>
 
-      {/* Position */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          Overlay Position
+      {/* Theme & Appearance */}
+      <div className="space-y-4 pt-2">
+        <label className="text-xs font-mono uppercase tracking-widest text-muted-foreground border-b-[2px] border-foreground/20 pb-1 flex justify-between">
+          <span>Theme & Appearance</span>
         </label>
-        <div className="flex gap-2">
-          {(["left", "right"] as const).map((pos) => (
-            <button
-              key={pos}
-              className={`flex-1 py-2 text-sm font-mono uppercase border-[3px] border-foreground transition-colors ${
-                settings.overlayPosition === pos
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground"
-              }`}
-              onClick={() => onUpdate({ overlayPosition: pos })}
-              style={{ boxShadow: settings.overlayPosition === pos ? "var(--brutal-shadow-primary)" : "none" }}
+
+        <div className="space-y-2">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase">Mode Tampilan</span>
+          <div className="flex gap-2">
+            {(["dark", "light"] as const).map((mode) => (
+              <button
+                key={mode}
+                className={`flex-1 py-1.5 text-xs font-mono uppercase border-[2px] border-foreground transition-colors ${settings.themeMode === mode ? "bg-primary text-primary-foreground font-bold shadow-[2px_2px_0px_#000]" : "bg-muted text-foreground"
+                  }`}
+                onClick={() => onUpdate({ themeMode: mode })}
+              >
+                {mode === "dark" ? "🌙 Dark" : "☀️ Light"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase">Template Warna Khusus</span>
+          <div className="grid grid-cols-7 gap-2">
+            {Object.entries(THEME_PRESETS).map(([key, template]) => {
+              // Aurora gets a special multi-color quarter swatch
+              if (key === "aurora") {
+                return (
+                  <div
+                    key={key}
+                    onClick={() => {
+                      const newColors = generateAuroraColors();
+                      onUpdate({ themeTemplate: "aurora", auroraCardColors: newColors });
+                    }}
+                    className={`relative aspect-square cursor-pointer border-[2px] border-foreground hover:scale-105 transition-transform flex items-center justify-center overflow-hidden ${settings.themeTemplate === "aurora" ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
+                      }`}
+                    title="Aurora (Klik untuk warna random!)"
+                  >
+                    <div className="w-full h-full grid grid-cols-2">
+                      {(settings.auroraCardColors ?? AURORA_CARD_COLORS).map((c, i) => (
+                        <div key={i} style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={key}
+                  onClick={() => onUpdate({ themeTemplate: key as any })}
+                  className={`aspect-square cursor-pointer border-[2px] border-foreground hover:scale-105 transition-transform flex items-center justify-center ${settings.themeTemplate === key ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
+                    }`}
+                  style={{ backgroundColor: template.hex }}
+                  title={template.name}
+                >
+                  {settings.themeTemplate === key && <span className="text-[10px]" style={{ mixBlendMode: 'difference', color: '#fff' }}></span>}
+                </div>
+              );
+            })}
+
+            {/* Custom Theme Button */}
+            <div
+              onClick={() => onUpdate({ themeTemplate: "custom" })}
+              className={`relative aspect-square cursor-pointer border-[2px] border-foreground overflow-hidden hover:scale-105 transition-transform flex items-center justify-center ${settings.themeTemplate === "custom" ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
+                }`}
+              title="Custom Color"
+              style={{ background: "linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff)" }}
             >
-              {pos}
-            </button>
-          ))}
+              {settings.themeTemplate === "custom" && (
+                <input
+                  type="color"
+                  value={settings.customPrimaryColor}
+                  onChange={(e) => onUpdate({ customPrimaryColor: e.target.value })}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
     </motion.div>
   );
 }

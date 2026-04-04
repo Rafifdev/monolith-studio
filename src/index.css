@@ -68,14 +68,21 @@
     font-family: var(--font-body);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: -0.02em;
   }
 
-  code, pre, .mono {
+  code,
+  pre,
+  .mono {
     font-family: var(--font-mono);
   }
 }
@@ -89,7 +96,7 @@
 
   .brutal-card:hover {
     transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px hsl(60 20% 92%);
+    box-shadow: 6px 6px 0px hsl(var(--foreground));
   }
 
   .brutal-btn {
@@ -102,12 +109,12 @@
 
   .brutal-btn:hover {
     transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px hsl(60 20% 92%);
+    box-shadow: 6px 6px 0px hsl(var(--foreground));
   }
 
   .brutal-btn:active {
     transform: translate(2px, 2px);
-    box-shadow: 0px 0px 0px hsl(60 20% 92%);
+    box-shadow: 0px 0px 0px hsl(var(--foreground));
   }
 
   .brutal-btn-secondary {
@@ -127,13 +134,13 @@
   .brutal-input:focus {
     outline: none;
     box-shadow: var(--brutal-shadow-primary);
-    border-color: hsl(52 100% 50%);
+    border-color: hsl(var(--primary));
   }
 
   .brutal-badge {
     @apply inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider border-[2px] border-foreground;
     font-family: var(--font-mono);
-    box-shadow: 2px 2px 0px hsl(60 20% 92%);
+    box-shadow: 2px 2px 0px hsl(var(--foreground));
   }
 
   .stat-number {

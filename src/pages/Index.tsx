@@ -5,52 +5,123 @@ import { StatCard } from "@/components/StatCard";
 import { TestPanel } from "@/components/TestPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { OverlayURLPanel } from "@/components/OverlayURLPanel";
+import { LiveMonitorPanel } from "@/components/LiveMonitorPanel";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
+import { applyTheme, getThemeColors } from "@/lib/theme";
 
 const Index = () => {
   const store = useOverlayStore();
-  const [activeTab, setActiveTab] = useState<"test" | "settings" | "preview">("test");
+  const { 
+    setIsConnected, addChat, addGift, addJoin, addLike, setStats,
+    settings, updateSettings, isConnected, stats
+  } = store;
+  
+  const [activeTab, setActiveTab] = useState<"monitor" | "test" | "settings" | "preview">("monitor");
   const [bc] = useState(() => new BroadcastChannel("overlay-events"));
 
-  // Clean old events for preview
+  // Apply visual theme globally
   useEffect(() => {
-    const interval = setInterval(() => {}, 500);
-    return () => clearInterval(interval);
-  }, []);
+    applyTheme(settings.themeMode, settings.themeTemplate, settings.customPrimaryColor, settings.auroraCardColors);
+  }, [settings.themeMode, settings.themeTemplate, settings.customPrimaryColor, settings.auroraCardColors]);
+
+  // Compute current theme colors for React component props
+  const themeColors = getThemeColors(settings.themeTemplate, settings.customPrimaryColor, settings.auroraCardColors);
+  
+  // Real-time Socket.IO integration
+  useEffect(() => {
+    import("../lib/socket").then(({ socket }) => {
+      socket.connect();
+
+      socket.on("tiktok_connected", () => {
+        setIsConnected(true);
+      });
+
+      socket.on("tiktok_disconnected", () => {
+        setIsConnected(false);
+      });
+
+      socket.on("tiktok_error", (err) => {
+        console.error("TikTok Error:", err);
+        setIsConnected(false);
+      });
+
+      socket.on("chat", (data) => {
+        addChat(data);
+        bc.postMessage({ type: "chat", data: { ...data, id: crypto.randomUUID(), timestamp: Date.now() } });
+      });
+
+      socket.on("gift", (data) => {
+        addGift(data);
+        bc.postMessage({ type: "gift", data: { ...data, id: crypto.randomUUID(), timestamp: Date.now() } });
+      });
+
+      socket.on("join", (data) => {
+        addJoin(data);
+        bc.postMessage({ type: "join", data: { ...data, id: crypto.randomUUID(), timestamp: Date.now() } });
+      });
+
+      socket.on("like", () => {
+        addLike();
+        bc.postMessage({ type: "like" });
+      });
+
+      socket.on("viewerCount", (data) => {
+        setStats((prev) => ({ ...prev, currentViewers: data.viewers, peakViewers: Math.max(prev.peakViewers, data.viewers) }));
+        bc.postMessage({ type: "viewerCount", data });
+      });
+
+      return () => {
+        socket.off("tiktok_connected");
+        socket.off("tiktok_disconnected");
+        socket.off("tiktok_error");
+        socket.off("chat");
+        socket.off("gift");
+        socket.off("join");
+        socket.off("like");
+        socket.off("viewerCount");
+      };
+    });
+  }, [bc, setIsConnected, addChat, addGift, addJoin, addLike, setStats]);
 
   const handleTestChat = useCallback((username: string, message: string) => {
     const data = { id: crypto.randomUUID(), username, message, timestamp: Date.now() };
-    store.addChat({ username, message });
+    addChat({ username, message });
     bc.postMessage({ type: "chat", data });
-  }, [store, bc]);
+  }, [addChat, bc]);
 
   const handleTestGift = useCallback((username: string, giftName: string, giftCount: number) => {
     const coins = giftName === "Lion" ? 29999 : giftName === "Universe" ? 34999 : 1;
     const data = { id: crypto.randomUUID(), username, giftName, giftCount, coins, timestamp: Date.now() };
-    store.addGift({ username, giftName, giftCount, coins });
+    addGift({ username, giftName, giftCount, coins });
     bc.postMessage({ type: "gift", data });
-  }, [store, bc]);
+  }, [addGift, bc]);
 
   const handleTestJoin = useCallback((username: string) => {
     const data = { id: crypto.randomUUID(), username, timestamp: Date.now() };
-    store.addJoin({ username });
+    addJoin({ username });
     bc.postMessage({ type: "join", data });
-  }, [store, bc]);
+  }, [addJoin, bc]);
 
   const handleConnect = useCallback(() => {
-    if (store.settings.tiktokUsername) {
-      store.setIsConnected(true);
+    if (settings.tiktokUsername) {
+      import("../lib/socket").then(({ socket }) => {
+        socket.emit("connect_tiktok", settings.tiktokUsername);
+      });
     }
-  }, [store]);
+  }, [settings.tiktokUsername]);
 
   const handleDisconnect = useCallback(() => {
-    store.setIsConnected(false);
-  }, [store]);
+    import("../lib/socket").then(({ socket }) => {
+      socket.emit("disconnect_tiktok");
+    });
+    setIsConnected(false);
+  }, [setIsConnected]);
 
   const tabs = [
+    { id: "monitor" as const, label: "💻 Monitor" },
     { id: "test" as const, label: "⚡ Test" },
     { id: "settings" as const, label: "⚙️ Settings" },
-    { id: "preview" as const, label: "👁 Preview" },
+    { id: "preview" as const, label: "👁 Overlay" },
   ];
 
   return (
@@ -67,10 +138,10 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl 4k:text-6xl font-display font-bold text-foreground leading-none">
-                STREAM<span className="text-primary">OVERLAY</span>
+                MONOLITH<span className="text-primary">OVERLAY</span>
               </h1>
               <p className="text-xs md:text-sm font-mono text-muted-foreground mt-1 uppercase tracking-widest">
-                TikTok Live Overlay Dashboard
+                TikTok / OBS Live Overlay Dashboard
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -88,50 +159,57 @@ const Index = () => {
             label="Total Views"
             value={store.stats.totalViews}
             icon={<span className="text-2xl">👁</span>}
-            color="accent"
+            color={themeColors.cardColors ? themeColors.cardColors[0] : themeColors.primary}
           />
           <StatCard
             label="Total Gifts"
             value={store.stats.totalGifts}
             icon={<span className="text-2xl">🎁</span>}
-            color="primary"
+            color={themeColors.cardColors ? themeColors.cardColors[1] : themeColors.primary}
           />
           <StatCard
             label="Total Likes"
             value={store.stats.totalLikes}
             icon={<span className="text-2xl">❤️</span>}
-            color="secondary"
+            color={themeColors.cardColors ? themeColors.cardColors[2] : themeColors.primary}
           />
           <StatCard
             label="Peak Viewers"
             value={store.stats.peakViewers}
             icon={<span className="text-2xl">📈</span>}
-            color="primary"
+            color={themeColors.cardColors ? themeColors.cardColors[3] : themeColors.primary}
           />
         </div>
 
-        {/* Tab Navigation (mobile) */}
-        <div className="flex lg:hidden gap-2 mb-4 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`shrink-0 px-4 py-2 text-xs font-mono uppercase tracking-wider border-[3px] border-foreground transition-colors ${
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground"
-              }`}
-              style={{ boxShadow: activeTab === tab.id ? "var(--brutal-shadow-primary)" : "none" }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* Workspace Area */}
+        <div className="w-full flex flex-col mt-4 md:mt-8">
+          {/* Tab Navigation */}
+          <div className="flex justify-start gap-3 md:gap-4 mb-6 overflow-x-auto px-1 md:px-0 pb-2 pt-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`shrink-0 brutal-btn text-xs md:text-sm px-4 py-2 md:px-6 md:py-3 ${
+                  activeTab === tab.id
+                    ? "" 
+                    : "bg-muted text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Main Content */}
+          <div className="w-full relative z-0">
+          
+          {/* Monitor */}
+          <div className={`${activeTab === "monitor" ? "block" : "hidden"}`}>
+            <LiveMonitorPanel />
+          </div>
+
           {/* Test Panel */}
-          <div className={`${activeTab === "test" ? "block" : "hidden"} lg:block`}>
+          <div className={`${activeTab === "test" ? "block" : "hidden"}`}>
             <TestPanel
               onTestChat={handleTestChat}
               onTestGift={handleTestGift}
@@ -141,12 +219,12 @@ const Index = () => {
           </div>
 
           {/* Overlay Output */}
-          <div className={`${activeTab === "preview" ? "block" : "hidden"} lg:block`}>
+          <div className={`${activeTab === "preview" ? "block" : "hidden"}`}>
             <OverlayURLPanel />
           </div>
 
           {/* Settings */}
-          <div className={`${activeTab === "settings" ? "block" : "hidden"} lg:block`}>
+          <div className={`${activeTab === "settings" ? "block" : "hidden"}`}>
             <SettingsPanel
               settings={store.settings}
               onUpdate={store.updateSettings}
@@ -154,6 +232,7 @@ const Index = () => {
               onConnect={handleConnect}
               onDisconnect={handleDisconnect}
             />
+          </div>
           </div>
         </div>
 
@@ -165,7 +244,7 @@ const Index = () => {
           className="mt-8 text-center"
         >
           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-            StreamOverlay • Built for TikTok Live • Use /overlay as Browser Source in OBS
+            MonolithOverlay • Built for TikTok Live • Use /overlay as Browser Source in OBS
           </p>
         </motion.footer>
       </div>
