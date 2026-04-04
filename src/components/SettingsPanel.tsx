@@ -10,7 +10,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ settings, onUpdate, isConnected, onConnect, onDisconnect }: SettingsPanelProps) {
-  const overlayUrl = `${window.location.origin}/overlay`;
+  
 
   return (
     <motion.div
