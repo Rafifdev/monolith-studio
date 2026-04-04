@@ -5,7 +5,7 @@ import { StatCard } from "@/components/StatCard";
 import { TestPanel } from "@/components/TestPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { OverlayURLPanel } from "@/components/OverlayURLPanel";
-import { OverlayPreview } from "@/components/OverlayPreview";
+import { useOverlayStore } from "@/hooks/useOverlayStore";
 import { useOverlayStore } from "@/hooks/useOverlayStore";
 
 const Index = () => {
