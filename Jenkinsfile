@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         // Pastikan nama 'node-20' sesuai dengan yang Anda setting di Global Tool Configuration
-        nodejs 'node-25'
+        nodejs 'NodeJS 25'
     }
 
     environment {
