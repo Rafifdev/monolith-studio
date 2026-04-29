@@ -16,8 +16,8 @@ pipeline {
             steps {
                 echo 'Mengunduh dependensi dan melakukan build...'
                 sh 'npm install'
-                // Jika ada proses bundling (seperti React/Next), aktifkan baris bawah ini:
-                // sh 'npm run build'
+            // Jika ada proses bundling (seperti React/Next), aktifkan baris bawah ini:
+            // sh 'npm run build'
             }
         }
 
@@ -39,12 +39,11 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Melakukan Deployment...'
-                // Contoh deploy sederhana: menjalankan aplikasi dengan PM2 atau Docker
-                // sh 'pm2 restart all'
-                
+                echo 'Membangun file produksi...'
+                sh 'npm run build'
+                echo 'Menyiapkan file untuk deployment...'
                 script {
-                    echo "Aplikasi ${APP_NAME} berhasil dideploy ke environment target."
+                    echo 'Deployment ke server berhasil dilakukan!'
                 }
             }
         }

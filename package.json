@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run --reporter=default --reporter=junit --outputFile=test-results.xml",
     "test:watch": "vitest",
     "server": "node server/index.js",
     "start": "concurrently \"npm run server\" \"npm run dev\""
